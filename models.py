@@ -45,13 +45,13 @@ class UserModel(db.Model):
         return sha256.verify(password, hash)
 
 
-class NotesSchema(ModelSchema):
+class UsersSchema(ModelSchema):
     class Meta:
         model = UserModel
 
 
-user_schema = NotesSchema()
-users_schema = NotesSchema(many=True)
+user_schema = UsersSchema()
+users_schema = UsersSchema(many=True)
 
 
 class RevokedTokenModel(db.Model):

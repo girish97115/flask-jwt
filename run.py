@@ -3,12 +3,12 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
-
+import os
 
 app = Flask(__name__)
 api = Api(app)
+app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['JWT_SECRET_KEY'] = 'jwt-secret-string'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'some-secret-string'
 app.config['JWT_BLACKLIST_ENABLED'] = True
@@ -43,3 +43,7 @@ api.add_resource(resources.UserLogoutRefresh, '/logout/refresh')
 api.add_resource(resources.TokenRefresh, '/token/refresh')
 api.add_resource(resources.AllUsers, '/users')
 api.add_resource(resources.SecretResource, '/secret')
+
+
+if __name__ == '__main__':
+    app.run()
