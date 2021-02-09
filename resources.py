@@ -1,79 +1,84 @@
 from flask_restful import Resource, reqparse
 from models import UserModel
+from marshmallow_sqlalchemy import ModelSchema
 from flask_jwt_extended import (create_access_token, create_refresh_token,
-                                jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt)
-from models import RevokedTokenModel
+                                jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, set_access_cookies, set_refresh_cookies, unset_jwt_cookies)
+from flask import jsonify
 
-parser = reqparse.RequestParser()
-parser.add_argument(
+
+class UsersSchema(ModelSchema):
+    class Meta:
+        model = UserModel
+
+
+user_schema = UsersSchema()
+users_schema = UsersSchema(many=True)
+
+user_parser = reqparse.RequestParser()
+user_parser.add_argument(
     'username', help='This field cannot be blank', required=True)
-parser.add_argument(
+user_parser.add_argument(
     'password', help='This field cannot be blank', required=True)
+user_parser.add_argument(
+    'email', help='This field cannot be blank', required=True)
+user_parser.add_argument(
+    'role', help='This field cannot be blank', required=True)
+user_parser.add_argument(
+    'phone', help='This field cannot be blank', required=True)
+
+
+user_put_parser = reqparse.RequestParser()
+user_put_parser.add_argument('username')
+user_put_parser.add_argument('password')
+user_put_parser.add_argument('email')
+user_put_parser.add_argument('role')
+user_put_parser.add_argument('phone')
 
 
 class UserRegistration(Resource):
     def post(self):
-        data = parser.parse_args()
+        data = user_parser.parse_args()
         if UserModel.find_by_username(data['username']):
             return {'message': 'User {} already exists'. format(data['username'])}
         new_user = UserModel(
-            data['username'], UserModel.generate_hash(data['password']))
-
+            data['username'], UserModel.generate_hash(data['password']), data["email"], data['role'], data['phone'])
         try:
             new_user.save_to_db()
-            access_token = create_access_token(identity=data['username'])
-            refresh_token = create_refresh_token(identity=data['username'])
-            return {
-                'message': 'User {} was created'.format(data['username']),
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }
+            resp = jsonify(
+                {'message': 'User {} was created'.format(data['username'])})
+            resp.status_code = 200
+            return resp
         except:
             return {'message': 'Something went wrong'}, 500
 
 
 class UserLogin(Resource):
     def post(self):
-        data = parser.parse_args()
+        data = user_parser.parse_args()
         current_user = UserModel.find_by_username(data['username'])
         if not current_user:
             return {'message': 'User {} doesn\'t exist'.format(data['username'])}
 
         if UserModel.verify_hash(data['password'], current_user.password):
-            access_token = create_access_token(identity=data['username'])
-            refresh_token = create_refresh_token(identity=data['username'])
-            return {
-                'message': 'Logged in as {}'.format(current_user.username),
-                'access_token': access_token,
-                'refresh_token': refresh_token
-            }
+            access_token = create_access_token(identity=current_user.id)
+            refresh_token = create_refresh_token(identity=current_user.id)
+            resp = jsonify(
+                {'message': 'Logged in as {}'.format(current_user.username)})
+
+            set_access_cookies(resp, access_token)
+            set_refresh_cookies(resp, refresh_token)
+            return resp
 
         else:
-            return {'message': 'Wrong credentials'}
+            return {'message': 'Wrong credentials'}, 500
 
 
-class UserLogoutAccess(Resource):
-    @jwt_required
+class UserLogout(Resource):
     def post(self):
-        jti = get_raw_jwt()['jti']
-        try:
-            revoked_token = RevokedTokenModel(jti=jti)
-            revoked_token.add()
-            return {'message': 'Access token has been revoked'}
-        except:
-            return {'message': 'Something went wrong'}, 500
-
-
-class UserLogoutRefresh(Resource):
-    @jwt_refresh_token_required
-    def post(self):
-        jti = get_raw_jwt()['jti']
-        try:
-            revoked_token = RevokedTokenModel(jti=jti)
-            revoked_token.add()
-            return {'message': 'Refresh token has been revoked'}
-        except:
-            return {'message': 'Something went wrong'}, 500
+        resp = jsonify({'logout': True})
+        unset_jwt_cookies(resp)
+        resp.status_code = 200
+        return resp
 
 
 class TokenRefresh(Resource):
@@ -81,7 +86,10 @@ class TokenRefresh(Resource):
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
-        return {'access_token': access_token}
+        resp = jsonify({'refresh': True})
+        set_access_cookies(resp, access_token)
+        resp.status_code = 200
+        return resp
 
 
 class AllUsers(Resource):
@@ -90,6 +98,42 @@ class AllUsers(Resource):
 
     def delete(self):
         return UserModel.delete_all()
+
+
+class UserDetails(Resource):
+    @jwt_required
+    def get(self):
+        user_id = get_jwt_identity()
+        current_user = UserModel.query.get(user_id)
+        return user_schema.dump(current_user)
+
+    @jwt_required
+    def put(self):
+        user_id = get_jwt_identity()
+        current_user = UserModel.query.get(user_id)
+        args = user_put_parser.parse_args()
+        if args['username']:
+            if UserModel.find_by_username(args['username']):
+                return {'message': 'User {} already exists'. format(args['username'])}, 409
+            current_user.username = args['username']
+
+        if args['password']:
+            current_user.password = args['password']
+
+        if args['email']:
+            current_user.email = args['email']
+
+        if args['role']:
+            current_user.role = args['role']
+
+        if args['phone']:
+            current_user.phone = args['phone']
+
+        try:
+            current_user.update_db()
+            return {'message': 'User Details Updated'}, 200
+        except:
+            return {'message': 'Something went wrong'}, 500
 
 
 class SecretResource(Resource):
