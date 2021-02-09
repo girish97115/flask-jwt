@@ -118,7 +118,7 @@ class UserDetails(Resource):
             current_user.username = args['username']
 
         if args['password']:
-            current_user.password = args['password']
+            current_user.password = UserModel.generate_hash(args['password'])
 
         if args['email']:
             current_user.email = args['email']
