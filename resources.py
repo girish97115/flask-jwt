@@ -63,7 +63,7 @@ class UserLogin(Resource):
         data = user_login_parser.parse_args()
         current_user = UserModel.find_by_username(data['username'])
         if not current_user:
-            return {'message': 'User {} doesn\'t exist'.format(data['username'])}
+            return {'message': 'User {} doesn\'t exist'.format(data['username'])}, 404
 
         if UserModel.verify_hash(data['password'], current_user.password):
             access_token = create_access_token(identity=current_user.id)
