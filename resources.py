@@ -26,6 +26,12 @@ user_parser.add_argument(
 user_parser.add_argument(
     'phone', help='This field cannot be blank', required=True)
 
+user_login_parser = reqparse.RequestParser()
+user_login_parser.add_argument(
+    'username', help='This field cannot be blank', required=True)
+user_login_parser.add_argument(
+    'password', help='This field cannot be blank', required=True)
+
 
 user_put_parser = reqparse.RequestParser()
 user_put_parser.add_argument('username')
@@ -39,7 +45,7 @@ class UserRegistration(Resource):
     def post(self):
         data = user_parser.parse_args()
         if UserModel.find_by_username(data['username']):
-            return {'message': 'User {} already exists'. format(data['username'])}
+            return {'message': 'User {} already exists'. format(data['username'])}, 409
         new_user = UserModel(
             data['username'], UserModel.generate_hash(data['password']), data["email"], data['role'], data['phone'])
         try:
@@ -54,7 +60,7 @@ class UserRegistration(Resource):
 
 class UserLogin(Resource):
     def post(self):
-        data = user_parser.parse_args()
+        data = user_login_parser.parse_args()
         current_user = UserModel.find_by_username(data['username'])
         if not current_user:
             return {'message': 'User {} doesn\'t exist'.format(data['username'])}
