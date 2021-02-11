@@ -1,20 +1,40 @@
 from run import db
 from marshmallow_sqlalchemy import ModelSchema
 from passlib.hash import pbkdf2_sha256 as sha256
+from sqlalchemy.sql import func
+
+userteam = db.Table('userteam',
+                    db.Column('user_id', db.Integer, db.ForeignKey(
+                        'users.id')),
+                    db.Column('team_id', db.Integer, db.ForeignKey(
+                        'teams.id'))
+                    )
 
 
 class UserModel(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), nullable=False)
     role = db.Column(db.String(120), nullable=False, default='user')
     phone = db.Column(db.String(120), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now(), onupdate=func.now())
+    assigned_issues = db.relationship(
+        "TaskModel", backref='assigne', lazy='dynamic', foreign_keys='TaskModel.assigne_id')
+    reporter_issues = db.relationship(
+        "TaskModel", backref='reporter', lazy='dynamic', foreign_keys='TaskModel.reporter_id')
+    documents = db.relationship(
+        "DocumentModel", backref='uploader', lazy='dynamic', foreign_keys='DocumentModel.uploader_id')
+    teams = db.relationship('TeamModel', secondary=userteam,
+                            backref=db.backref('members', lazy='dynamic'))
 
     def __init__(self, username, password, email, phone):
-        self.username = username
+        self.name = username
         self.password = password
         self.email = email
         self.phone = phone
@@ -60,3 +80,89 @@ class UsersSchema(ModelSchema):
 
 user_schema = UsersSchema()
 users_schema = UsersSchema(many=True)
+
+userteam = db.Table('userteam',
+                    db.Column('user_id', db.Integer, db.ForeignKey(
+                        'users.id')),
+                    db.Column('team_id', db.Integer, db.ForeignKey(
+                        'teams.id'))
+                    )
+
+
+class TeamModel(db.Model):
+    __tablename__ = 'teams'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    description = db.Column(db.String(129))
+    tasks = db.relationship("TaskModel", backref='team')
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now(), onupdate=func.now())
+
+    def __init__(self, name, description):
+        self.name = name
+        self.description = description
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update_db(self):
+        db.session.commit()
+
+
+class TaskModel(db.Model):
+    __tablename__ = 'tasks'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False, unique=True)
+    description = db.Column(db.String())
+    status = db.Column(db.String(120), nullable=False)
+    priority = db.Column(db.String(120), nullable=False)
+    team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    assigne_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    documents = db.relationship(
+        "DocumentModel", backref='task', lazy='dynamic', foreign_keys='DocumentModel.task_id')
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now(), onupdate=func.now())
+
+    def __init__(self, title, description, status, priority):
+        self.title = title
+        self.description = description
+        self.status = status
+        self.priority = priority
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update_db(self):
+        db.session.commit()
+
+
+class DocumentModel(db.Model):
+    __tablename__ = 'document'
+
+    id = db.Column(db.Integer, primary_key=True)
+    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'))
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    uploader_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    created_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True),
+                           server_default=func.now(), onupdate=func.now())
+
+    def __init__(self, name):
+        self.name = name
+
+    def save_to_db(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update_db(self):
+        db.session.commit()

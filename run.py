@@ -27,24 +27,26 @@ def create_tables():
     db.create_all()
 
 
-@jwt.token_in_blacklist_loader
-def check_if_token_in_blacklist(decrypted_token):
-    jti = decrypted_token['jti']
-    return models.RevokedTokenModel.is_jti_blacklisted(jti)
+# @jwt.token_in_blacklist_loader
+# def check_if_token_in_blacklist(decrypted_token):
+#     jti = decrypted_token['jti']
+#     return models.RevokedTokenModel.is_jti_blacklisted(jti)
 
 
 import views
 import models
-import resources
+from resources import UserResources
 
-api.add_resource(resources.UserRegistration, '/registration')
-api.add_resource(resources.UserLogin, '/login')
-api.add_resource(resources.UserLogout, '/logout')
-api.add_resource(resources.TokenRefresh, '/token/refresh')
-api.add_resource(resources.AllUsers, '/users')
-api.add_resource(resources.UserDetails, '/user')
-api.add_resource(resources.SecretResource, '/secret')
-api.add_resource(resources.AdminUser, '/admin/user/<int:user_id>')
+api.add_resource(UserResources.UserRegistration, '/registration')
+api.add_resource(UserResources.UserLogin, '/login')
+api.add_resource(UserResources.UserLogout, '/logout')
+api.add_resource(UserResources.TokenRefresh, '/token/refresh')
+api.add_resource(UserResources.AllUsers, '/users')
+api.add_resource(UserResources.UserDetails, '/user')
+api.add_resource(UserResources.SecretResource, '/secret')
+
+# for admin use
+api.add_resource(UserResources.AdminUser, '/admin/user/<int:user_id>')
 
 if __name__ == '__main__':
     app.run()
