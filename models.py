@@ -10,14 +10,13 @@ class UserModel(db.Model):
     username = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(120), nullable=False)
-    role = db.Column(db.String(120), nullable=False)
+    role = db.Column(db.String(120), nullable=False, default='user')
     phone = db.Column(db.String(120), nullable=False)
 
-    def __init__(self, username, password, email, role, phone):
+    def __init__(self, username, password, email, phone):
         self.username = username
         self.password = password
         self.email = email
-        self.role = role
         self.phone = phone
 
     def save_to_db(self):
