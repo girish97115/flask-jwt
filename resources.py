@@ -22,8 +22,6 @@ user_parser.add_argument(
 user_parser.add_argument(
     'email', help='This field cannot be blank', required=True)
 user_parser.add_argument(
-    'role', help='This field cannot be blank', required=True)
-user_parser.add_argument(
     'phone', help='This field cannot be blank', required=True)
 
 user_login_parser = reqparse.RequestParser()
@@ -37,7 +35,6 @@ user_put_parser = reqparse.RequestParser()
 user_put_parser.add_argument('username')
 user_put_parser.add_argument('password')
 user_put_parser.add_argument('email')
-user_put_parser.add_argument('role')
 user_put_parser.add_argument('phone')
 
 
@@ -47,7 +44,7 @@ class UserRegistration(Resource):
         if UserModel.find_by_username(data['username']):
             return {'message': 'User {} already exists'. format(data['username'])}, 409
         new_user = UserModel(
-            data['username'], UserModel.generate_hash(data['password']), data["email"], data['role'], data['phone'])
+            data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
         try:
             new_user.save_to_db()
             resp = jsonify(
@@ -129,9 +126,6 @@ class UserDetails(Resource):
         if args['email']:
             current_user.email = args['email']
 
-        if args['role']:
-            current_user.role = args['role']
-
         if args['phone']:
             current_user.phone = args['phone']
 
@@ -148,3 +142,31 @@ class SecretResource(Resource):
         return {
             'answer': 42
         }
+
+
+class AdminUser(Resource):
+    def get(self, user_id):
+        current_user = UserModel.query.get(user_id)
+        return user_schema.dump(current_user)
+
+    def put(self, user_id):
+        current_user = UserModel.query.get(user_id)
+        args = user_put_parser.parse_args()
+        if args['username']:
+            if UserModel.find_by_username(args['username']):
+                return {'message': 'User {} already exists'. format(args['username'])}, 409
+            current_user.username = args['username']
+
+        if args['password']:
+            current_user.password = UserModel.generate_hash(args['password'])
+
+        if args['email']:
+            current_user.email = args['email']
+
+        if args['phone']:
+            current_user.phone = args['phone']
+        try:
+            current_user.update_db()
+            return {'message': 'User Details Updated'}, 200
+        except:
+            return {'message': 'Something went wrong'}, 500

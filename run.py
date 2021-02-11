@@ -44,7 +44,7 @@ api.add_resource(resources.TokenRefresh, '/token/refresh')
 api.add_resource(resources.AllUsers, '/users')
 api.add_resource(resources.UserDetails, '/user')
 api.add_resource(resources.SecretResource, '/secret')
-
+api.add_resource(resources.AdminUser, '/admin/user/<int:user_id>')
 
 if __name__ == '__main__':
     app.run()
