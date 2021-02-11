@@ -142,3 +142,31 @@ class SecretResource(Resource):
         return {
             'answer': 42
         }
+
+
+class AdminUser(Resource):
+    def get(self, user_id):
+        current_user = UserModel.query.get(user_id)
+        return user_schema.dump(current_user)
+
+    def put(self, user_id):
+        current_user = UserModel.query.get(user_id)
+        args = user_put_parser.parse_args()
+        if args['username']:
+            if UserModel.find_by_username(args['username']):
+                return {'message': 'User {} already exists'. format(args['username'])}, 409
+            current_user.username = args['username']
+
+        if args['password']:
+            current_user.password = UserModel.generate_hash(args['password'])
+
+        if args['email']:
+            current_user.email = args['email']
+
+        if args['phone']:
+            current_user.phone = args['phone']
+        try:
+            current_user.update_db()
+            return {'message': 'User Details Updated'}, 200
+        except:
+            return {'message': 'Something went wrong'}, 500
