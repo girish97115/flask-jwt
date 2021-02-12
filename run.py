@@ -3,6 +3,8 @@ from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 import os
 
 app = Flask(__name__)
@@ -19,7 +21,9 @@ app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate()
+
 migrate.init_app(app, db)
+admin = Admin(app)
 
 
 @app.before_first_request
@@ -35,7 +39,13 @@ def create_tables():
 
 import views
 import models
-from resources import UserResources
+from resources import UserResources, TeamResources, TaskResources
+
+
+admin.add_view(ModelView(models.UserModel, db.session))
+admin.add_view(ModelView(models.TeamModel, db.session))
+admin.add_view(ModelView(models.TaskModel, db.session))
+admin.add_view(ModelView(models.DocumentModel, db.session))
 
 api.add_resource(UserResources.UserRegistration, '/registration')
 api.add_resource(UserResources.UserLogin, '/login')
@@ -45,6 +55,11 @@ api.add_resource(UserResources.AllUsers, '/users')
 api.add_resource(UserResources.UserDetails, '/user')
 api.add_resource(UserResources.SecretResource, '/secret')
 
+api.add_resource(TeamResources.UserTeams, '/teams')
+api.add_resource(TeamResources.TeamDetails, '/team/<int:team_id>')
+
+api.add_resource(TaskResources.CreateTask, '/createtask/<int:team_id>')
+api.add_resource(TaskResources.TaskDetails, '/task/<int:task_id>')
 # for admin use
 api.add_resource(UserResources.AdminUser, '/admin/user/<int:user_id>')
 

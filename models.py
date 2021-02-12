@@ -1,7 +1,8 @@
-from run import db
+from run import db, admin
 from marshmallow_sqlalchemy import ModelSchema
 from passlib.hash import pbkdf2_sha256 as sha256
 from sqlalchemy.sql import func
+
 
 userteam = db.Table('userteam',
                     db.Column('user_id', db.Integer, db.ForeignKey(
@@ -48,7 +49,7 @@ class UserModel(db.Model):
 
     @classmethod
     def find_by_username(cls, username):
-        return cls.query.filter_by(username=username).first()
+        return cls.query.filter_by(name=username).first()
 
     @classmethod
     def return_all(cls):
@@ -71,22 +72,6 @@ class UserModel(db.Model):
     @staticmethod
     def verify_hash(password, hash):
         return sha256.verify(password, hash)
-
-
-class UsersSchema(ModelSchema):
-    class Meta:
-        model = UserModel
-
-
-user_schema = UsersSchema()
-users_schema = UsersSchema(many=True)
-
-userteam = db.Table('userteam',
-                    db.Column('user_id', db.Integer, db.ForeignKey(
-                        'users.id')),
-                    db.Column('team_id', db.Integer, db.ForeignKey(
-                        'teams.id'))
-                    )
 
 
 class TeamModel(db.Model):
@@ -112,6 +97,10 @@ class TeamModel(db.Model):
     def update_db(self):
         db.session.commit()
 
+    @classmethod
+    def find_by_username(cls, username):
+        return cls.query.filter_by(name=username).first()
+
 
 class TaskModel(db.Model):
     __tablename__ = 'tasks'
@@ -131,11 +120,12 @@ class TaskModel(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now(), onupdate=func.now())
 
-    def __init__(self, title, description, status, priority):
+    def __init__(self, title, status, priority, reporter_id, assigne_id):
         self.title = title
-        self.description = description
         self.status = status
         self.priority = priority
+        self.reporter_id = reporter_id
+        self.assigne_id = assigne_id
 
     def save_to_db(self):
         db.session.add(self)
@@ -143,6 +133,10 @@ class TaskModel(db.Model):
 
     def update_db(self):
         db.session.commit()
+
+    @classmethod
+    def find_by_title(cls, title):
+        return cls.query.filter_by(title=title).first()
 
 
 class DocumentModel(db.Model):
@@ -166,3 +160,12 @@ class DocumentModel(db.Model):
 
     def update_db(self):
         db.session.commit()
+
+
+class UsersSchema(ModelSchema):
+    class Meta:
+        model = UserModel
+
+
+user_schema = UsersSchema()
+users_schema = UsersSchema(many=True)

@@ -11,8 +11,9 @@ class UsersSchema(ModelSchema):
         model = UserModel
 
 
-user_schema = UsersSchema()
-users_schema = UsersSchema(many=True)
+user_schema = UsersSchema(only=("name", "password", "email", "phone"))
+users_schema = UsersSchema(
+    only=("name", "password", "email", "phone"), many=True)
 
 user_parser = reqparse.RequestParser()
 user_parser.add_argument(
@@ -43,8 +44,10 @@ class UserRegistration(Resource):
         data = user_parser.parse_args()
         if UserModel.find_by_username(data['name']):
             return {'message': 'User {} already exists'. format(data['name'])}, 409
+        # new_user = UserModel(
+        #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
         new_user = UserModel(
-            data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
+            data['name'], data['password'], data["email"], data['phone'])
         try:
             new_user.save_to_db()
             resp = jsonify(
@@ -62,7 +65,8 @@ class UserLogin(Resource):
         if not current_user:
             return {'message': 'User {} doesn\'t exist'.format(data['name'])}, 404
 
-        if UserModel.verify_hash(data['password'], current_user.password):
+        # if UserModel.verify_hash(data['password'], current_user.password):
+        if data['password'] == current_user.password:
             access_token = create_access_token(identity=current_user.id)
             refresh_token = create_refresh_token(identity=current_user.id)
             resp = jsonify(
