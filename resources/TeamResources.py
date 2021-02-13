@@ -57,3 +57,34 @@ class TeamDetails(Resource):
             return {'message': 'User Details Updated'}, 200
         except:
             return {'message': 'Something went wrong'}, 500
+
+
+class AdminUserTeams(Resource):
+    def get(self, user_id):
+   
+        current_user = UserModel.query.get(user_id)
+        user_teams = current_user.teams
+        return teams_schema.dump(user_teams)
+
+
+class AdminTeamDetails(Resource):
+    def get(self, team_id):
+        team = TeamModel.query.get(team_id)
+        return team_schema.dump(team)
+
+    def put(self, team_id):
+        team = TeamModel.query.get(team_id)
+        args = team_put_parser.parse_args()
+        if args['name']:
+            if TeamModel.find_by_username(args['name']):
+                return {'message': 'Team with Name {} already exists'. format(args['name'])}, 409
+            team.name = args['name']
+
+        if args['description']:
+            team.description = args['description']
+
+        try:
+            team.update_db()
+            return {'message': 'User Details Updated'}, 200
+        except:
+            return {'message': 'Something went wrong'}, 500

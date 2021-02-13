@@ -34,6 +34,9 @@ class UserModel(db.Model):
     teams = db.relationship('TeamModel', secondary=userteam,
                             backref=db.backref('members', lazy='dynamic'))
 
+    def __repr__(self):
+        return '<User model {}, {}>'.format(self.id, self.name)
+
     def __init__(self, username, password, email, phone):
         self.name = username
         self.password = password
@@ -86,6 +89,9 @@ class TeamModel(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now(), onupdate=func.now())
 
+    def __repr__(self):
+        return '<Team model {}, {}>'.format(self.id, self.name)
+
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -120,6 +126,9 @@ class TaskModel(db.Model):
     updated_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now(), onupdate=func.now())
 
+    def __repr__(self):
+        return '<Task model {}, {}>'.format(self.id, self.title)
+
     def __init__(self, title, status, priority, reporter_id, assigne_id):
         self.title = title
         self.status = status
@@ -150,6 +159,9 @@ class DocumentModel(db.Model):
                            server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True),
                            server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return '<Document model {}, {}>'.format(self.id, self.name)
 
     def __init__(self, name):
         self.name = name

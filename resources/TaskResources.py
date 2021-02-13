@@ -90,3 +90,57 @@ class TaskDetails(Resource):
             return {'message': 'User Details Updated'}, 200
         except:
             return {'message': 'Something went wrong'}, 500
+
+
+class AdminCreateTask(Resource):
+
+    def post(self, team_id):
+        current_user = get_jwt_identity()
+        data = task_parser.parse_args()
+        if TaskModel.find_by_title(data['title']):
+            return {'message': 'Task {} already exists'. format(data['title'])}, 409
+
+        new_task = TaskModel(
+            data['title'], data['status'], data["priority"], current_user, data['assigne_id'])
+        if data['description']:
+            new_task.description = data['description']
+        new_task.team_id = team_id
+
+        try:
+            new_task.save_to_db()
+            resp = jsonify(
+                {'message': 'Task {} was created'.format(data['title'])})
+            resp.status_code = 200
+            return resp
+        except:
+            return {'message': 'Something went wrong'}, 500
+
+
+class AdminTaskDetails(Resource):
+
+    def get(self, task_id):
+        task = TaskModel.query.get(task_id)
+        return task_schema.dump(task)
+
+    def put(self, task_id):
+        task = TaskModel.query.get(task_id)
+        args = task_put_parser.parse_args()
+        if args['title']:
+            if TaskModel.find_by_title(args['title']):
+                return {'message': 'Task with Name {} already exists'. format(args['name'])}, 409
+            task.title = args['title']
+
+        if args['description']:
+            task.description = args['description']
+
+        if args['status']:
+            task.status = args['status']
+
+        if args['priority']:
+            task.status = args['priority']
+
+        try:
+            task.update_db()
+            return {'message': 'User Details Updated'}, 200
+        except:
+            return {'message': 'Something went wrong'}, 500
