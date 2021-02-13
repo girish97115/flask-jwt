@@ -51,7 +51,7 @@ api.add_resource(UserResources.UserRegistration, '/registration')
 api.add_resource(UserResources.UserLogin, '/login')
 api.add_resource(UserResources.UserLogout, '/logout')
 api.add_resource(UserResources.TokenRefresh, '/token/refresh')
-api.add_resource(UserResources.AllUsers, '/users')
+
 api.add_resource(UserResources.UserDetails, '/user')
 api.add_resource(UserResources.SecretResource, '/secret')
 
@@ -62,6 +62,7 @@ api.add_resource(TaskResources.CreateTask, '/createtask/<int:team_id>')
 api.add_resource(TaskResources.TaskDetails, '/task/<int:task_id>')
 
 # for admin use
+api.add_resource(UserResources.AllUsers, '/users')
 api.add_resource(UserResources.AdminUser, '/admin/user/<int:user_id>')
 
 api.add_resource(TeamResources.AdminUserTeams, '/admin/<int:user_id>/teams')
