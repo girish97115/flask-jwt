@@ -13,9 +13,9 @@ class TasksSchema(ModelSchema):
 
 
 task_schema = TasksSchema(
-    only=("id", "title", "description", "status", "priority", "reporter_id", "assigne_id"))
+    only=("id", "title", "description", "status", "priority", "reporter_id", "assigne_id", "planneddate"))
 tasks_schema = TasksSchema(
-    only=("id", "title", "description", "status", "priority", "reporter_id", "assigne_id"), many=True)
+    only=("id", "title", "description", "status", "priority", "reporter_id", "assigne_id", "planneddate"), many=True)
 
 task_parser = reqparse.RequestParser()
 task_parser.add_argument(
@@ -27,6 +27,23 @@ task_parser.add_argument(
     'priority', help='This field cannot be blank', required=True)
 task_parser.add_argument(
     'assigne_id', help='This field cannot be blank', required=True)
+task_parser.add_argument(
+    'planneddate', help='This field cannot be blank', required=True)
+
+admin_task_parser = reqparse.RequestParser()
+admin_task_parser .add_argument(
+    'title', help='This field cannot be blank', required=True)
+admin_task_parser .add_argument('description')
+admin_task_parser .add_argument(
+    'status', help='This field cannot be blank', required=True)
+admin_task_parser .add_argument(
+    'priority', help='This field cannot be blank', required=True)
+admin_task_parser .add_argument(
+    'reporter_id', help='This field cannot be blank', required=True)
+admin_task_parser .add_argument(
+    'assigne_id', help='This field cannot be blank', required=True)
+admin_task_parser .add_argument(
+    'planneddate', help='This field cannot be blank', required=True)
 
 task_put_parser = reqparse.RequestParser()
 task_put_parser.add_argument('title')
@@ -34,6 +51,9 @@ task_put_parser.add_argument('description')
 task_put_parser.add_argument('status')
 task_put_parser.add_argument('priority')
 task_put_parser.add_argument('assigne_id')
+task_put_parser.add_argument('planneddate')
+task_put_parser.add_argument('reporter_id')
+
 
 
 class CreateTask(Resource):
@@ -46,7 +66,7 @@ class CreateTask(Resource):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
         new_task = TaskModel(
-            data['title'], data['status'], data["priority"], current_user, data['assigne_id'])
+            data['title'], data['status'], data["priority"], current_user, data['assigne_id'], data["planneddate"])
         if data['description']:
             new_task.description = data['description']
         new_task.team_id = team_id
@@ -85,6 +105,12 @@ class TaskDetails(Resource):
         if args['priority']:
             task.status = args['priority']
 
+        if args['planneddate']:
+            task.planneddate = args['planneddate']
+
+        if args['assigne_id']:
+            task.assigne_id = args['assigne_id']
+
         try:
             task.update_db()
             return {'message': 'User Details Updated'}, 200
@@ -96,12 +122,12 @@ class AdminCreateTask(Resource):
 
     def post(self, team_id):
         current_user = get_jwt_identity()
-        data = task_parser.parse_args()
+        data = admin_task_parser.parse_args()
         if TaskModel.find_by_title(data['title']):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
         new_task = TaskModel(
-            data['title'], data['status'], data["priority"], current_user, data['assigne_id'])
+            data['title'], data['status'], data["priority"], data['reporter_id'], data['assigne_id'])
         if data['description']:
             new_task.description = data['description']
         new_task.team_id = team_id
@@ -138,6 +164,15 @@ class AdminTaskDetails(Resource):
 
         if args['priority']:
             task.status = args['priority']
+
+        if args['priority']:
+            task.status = args['priority']
+
+        if args['assigne_id']:
+            task.assigne_id = args['assigne_id']
+
+        if args['reporter_id']:
+            task.assigne_id = args['reporter_id']
 
         try:
             task.update_db()
