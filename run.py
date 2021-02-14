@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
 api = Api(app)
@@ -21,7 +22,7 @@ app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate()
-
+CORS(app)
 migrate.init_app(app, db)
 admin = Admin(app)
 
