@@ -55,7 +55,6 @@ task_put_parser.add_argument('planneddate')
 task_put_parser.add_argument('reporter_id')
 
 
-
 class CreateTask(Resource):
 
     @jwt_required
@@ -103,7 +102,7 @@ class TaskDetails(Resource):
             task.status = args['status']
 
         if args['priority']:
-            task.status = args['priority']
+            task.priority = args['priority']
 
         if args['planneddate']:
             task.planneddate = args['planneddate']
@@ -113,7 +112,7 @@ class TaskDetails(Resource):
 
         try:
             task.update_db()
-            return {'message': 'User Details Updated'}, 200
+            return {'message': 'Task Details Updated'}, 200
         except:
             return {'message': 'Something went wrong'}, 500
 
@@ -127,7 +126,7 @@ class AdminCreateTask(Resource):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
         new_task = TaskModel(
-            data['title'], data['status'], data["priority"], data['reporter_id'], data['assigne_id'])
+            data['title'], data['status'], data["priority"], data['reporter_id'], data['assigne_id'], data['planneddate'])
         if data['description']:
             new_task.description = data['description']
         new_task.team_id = team_id
@@ -163,16 +162,13 @@ class AdminTaskDetails(Resource):
             task.status = args['status']
 
         if args['priority']:
-            task.status = args['priority']
-
-        if args['priority']:
-            task.status = args['priority']
+            task.priority = args['priority']
 
         if args['assigne_id']:
             task.assigne_id = args['assigne_id']
 
         if args['reporter_id']:
-            task.assigne_id = args['reporter_id']
+            task.reporter_id = args['reporter_id']
 
         try:
             task.update_db()

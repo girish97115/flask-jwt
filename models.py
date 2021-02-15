@@ -116,7 +116,7 @@ class TaskModel(db.Model):
     description = db.Column(db.String())
     status = db.Column(db.String(120), nullable=False)
     priority = db.Column(db.String(120), nullable=False)
-    planneddate = db.Column(db.DateTime(), nullable=False)
+    planneddate = db.Column(db.Date(), nullable=False)
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
     reporter_id = db.Column(
         db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -138,6 +138,7 @@ class TaskModel(db.Model):
         self.priority = priority
         self.reporter_id = reporter_id
         self.assigne_id = assigne_id
+        self.planneddate = planneddate
 
     def save_to_db(self):
         db.session.add(self)
