@@ -25,10 +25,8 @@ task_parser.add_argument(
     'status', help='This field cannot be blank', required=True)
 task_parser.add_argument(
     'priority', help='This field cannot be blank', required=True)
-task_parser.add_argument(
-    'assigne_id', help='This field cannot be blank', required=True)
-task_parser.add_argument(
-    'planneddate', help='This field cannot be blank', required=True)
+task_parser.add_argument('assigne_id')
+task_parser.add_argument('planneddate')
 
 admin_task_parser = reqparse.RequestParser()
 admin_task_parser .add_argument(
@@ -40,10 +38,8 @@ admin_task_parser .add_argument(
     'priority', help='This field cannot be blank', required=True)
 admin_task_parser .add_argument(
     'reporter_id', help='This field cannot be blank', required=True)
-admin_task_parser .add_argument(
-    'assigne_id', help='This field cannot be blank', required=True)
-admin_task_parser .add_argument(
-    'planneddate', help='This field cannot be blank', required=True)
+admin_task_parser .add_argument('assigne_id')
+admin_task_parser .add_argument('planneddate')
 
 task_put_parser = reqparse.RequestParser()
 task_put_parser.add_argument('title')
@@ -65,9 +61,14 @@ class CreateTask(Resource):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
         new_task = TaskModel(
-            data['title'], data['status'], data["priority"], current_user, data['assigne_id'], data["planneddate"])
+            data['title'], data['status'], data["priority"])
+        new_task['reporter_id'] = current_user.id
         if data['description']:
             new_task.description = data['description']
+        if data['assigne_id']:
+            new_task.assigne_id = data['assigne_id']
+        if data['planneddate']:
+            new_task.planneddate = data['planneddate']
         new_task.team_id = team_id
 
         try:
@@ -126,9 +127,15 @@ class AdminCreateTask(Resource):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
         new_task = TaskModel(
-            data['title'], data['status'], data["priority"], data['reporter_id'], data['assigne_id'], data['planneddate'])
+            data['title'], data['status'], data["priority"])
         if data['description']:
             new_task.description = data['description']
+        if data['reporter_id']:
+            new_task.reporter_id = data['reporter_id']
+        if data['assigne_id']:
+            new_task.assigne_id = data['assigne_id']
+        if data['planneddate']:
+            new_task.planneddate = data['planneddate']
         new_task.team_id = team_id
 
         try:

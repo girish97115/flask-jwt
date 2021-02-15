@@ -116,12 +116,10 @@ class TaskModel(db.Model):
     description = db.Column(db.String())
     status = db.Column(db.String(120), nullable=False)
     priority = db.Column(db.String(120), nullable=False)
-    planneddate = db.Column(db.Date(), nullable=False)
+    planneddate = db.Column(db.Date())
     team_id = db.Column(db.Integer, db.ForeignKey('teams.id'))
-    reporter_id = db.Column(
-        db.Integer, db.ForeignKey('users.id'), nullable=False)
-    assigne_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False
-                           )
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    assigne_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     documents = db.relationship(
         "DocumentModel", backref='task', lazy='dynamic', foreign_keys='DocumentModel.task_id')
     created_at = db.Column(db.DateTime(timezone=True),
@@ -132,13 +130,10 @@ class TaskModel(db.Model):
     def __repr__(self):
         return '<Task model {}, {}>'.format(self.id, self.title)
 
-    def __init__(self, title, status, priority, reporter_id, assigne_id, planneddate):
+    def __init__(self, title, status, priority):
         self.title = title
         self.status = status
         self.priority = priority
-        self.reporter_id = reporter_id
-        self.assigne_id = assigne_id
-        self.planneddate = planneddate
 
     def save_to_db(self):
         db.session.add(self)
