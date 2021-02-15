@@ -11,9 +11,9 @@ class UsersSchema(ModelSchema):
         model = UserModel
 
 
-user_schema = UsersSchema(only=("name", "password", "email", "phone"))
+user_schema = UsersSchema(only=("id", "name", "password", "email", "phone"))
 users_schema = UsersSchema(
-    only=("name", "password", "email", "phone"), many=True)
+    only=("id", "name", "password", "email", "phone"), many=True)
 
 user_parser = reqparse.RequestParser()
 user_parser.add_argument(

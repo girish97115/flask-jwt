@@ -62,16 +62,20 @@ api.add_resource(TeamResources.TeamDetails, '/team/<int:team_id>')
 api.add_resource(TaskResources.CreateTask, '/createtask/<int:team_id>')
 api.add_resource(TaskResources.TaskDetails, '/task/<int:task_id>')
 
+
 # for admin use
 api.add_resource(UserResources.AllUsers, '/users')
 api.add_resource(UserResources.AdminUser, '/admin/user/<int:user_id>')
 
 api.add_resource(TeamResources.AdminUserTeams, '/admin/<int:user_id>/teams')
 api.add_resource(TeamResources.AdminTeamDetails, '/admin/team/<int:team_id>')
+api.add_resource(TeamResources.AdminTeamDetailsSort,
+                 '/admin/team/<int:team_id>/sort')
 
 api.add_resource(TaskResources.AdminCreateTask,
                  '/admin/createtask/<int:team_id>')
 api.add_resource(TaskResources.AdminTaskDetails, '/admin/task/<int:task_id>')
+
 
 if __name__ == '__main__':
     app.run()
