@@ -74,7 +74,7 @@ class CreateTask(Resource):
         try:
             new_task.save_to_db()
             resp = jsonify(
-                {'message': 'Task {} was created'.format(data['title'])})
+                {'message': 'Task {} was created'.format(data['title']), 'id': new_task.id})
             resp.status_code = 200
             return resp
         except:
@@ -141,7 +141,7 @@ class AdminCreateTask(Resource):
         try:
             new_task.save_to_db()
             resp = jsonify(
-                {'message': 'Task {} was created'.format(data['title'])})
+                {'message': 'Task {} was created'.format(data['title']), 'id': new_task.id})
             resp.status_code = 200
             return resp
         except:
@@ -176,6 +176,9 @@ class AdminTaskDetails(Resource):
 
         if args['reporter_id']:
             task.reporter_id = args['reporter_id']
+
+        if args['planneddate']:
+            task.planneddate = args['planneddate']
 
         try:
             task.update_db()
