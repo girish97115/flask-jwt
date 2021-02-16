@@ -11,12 +11,13 @@ class UsersSchema(ModelSchema):
         model = UserModel
 
 
-user_schema = UsersSchema()
-users_schema = UsersSchema(many=True)
+user_schema = UsersSchema(only=("id", "name", "password", "email", "phone"))
+users_schema = UsersSchema(
+    only=("id", "name", "password", "email", "phone"), many=True)
 
 user_parser = reqparse.RequestParser()
 user_parser.add_argument(
-    'username', help='This field cannot be blank', required=True)
+    'name', help='This field cannot be blank', required=True)
 user_parser.add_argument(
     'password', help='This field cannot be blank', required=True)
 user_parser.add_argument(
@@ -26,13 +27,13 @@ user_parser.add_argument(
 
 user_login_parser = reqparse.RequestParser()
 user_login_parser.add_argument(
-    'username', help='This field cannot be blank', required=True)
+    'name', help='This field cannot be blank', required=True)
 user_login_parser.add_argument(
     'password', help='This field cannot be blank', required=True)
 
 
 user_put_parser = reqparse.RequestParser()
-user_put_parser.add_argument('username')
+user_put_parser.add_argument('name')
 user_put_parser.add_argument('password')
 user_put_parser.add_argument('email')
 user_put_parser.add_argument('phone')
@@ -41,14 +42,16 @@ user_put_parser.add_argument('phone')
 class UserRegistration(Resource):
     def post(self):
         data = user_parser.parse_args()
-        if UserModel.find_by_username(data['username']):
-            return {'message': 'User {} already exists'. format(data['username'])}, 409
+        if UserModel.find_by_username(data['name']):
+            return {'message': 'User {} already exists'. format(data['name'])}, 409
+        # new_user = UserModel(
+        #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
         new_user = UserModel(
-            data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
+            data['name'], data['password'], data["email"], data['phone'])
         try:
             new_user.save_to_db()
             resp = jsonify(
-                {'message': 'User {} was created'.format(data['username'])})
+                {'message': 'User {} was created'.format(data['name'])})
             resp.status_code = 200
             return resp
         except:
@@ -58,15 +61,16 @@ class UserRegistration(Resource):
 class UserLogin(Resource):
     def post(self):
         data = user_login_parser.parse_args()
-        current_user = UserModel.find_by_username(data['username'])
+        current_user = UserModel.find_by_username(data['name'])
         if not current_user:
-            return {'message': 'User {} doesn\'t exist'.format(data['username'])}, 404
+            return {'message': 'User {} doesn\'t exist'.format(data['name'])}, 404
 
-        if UserModel.verify_hash(data['password'], current_user.password):
+        # if UserModel.verify_hash(data['password'], current_user.password):
+        if data['password'] == current_user.password:
             access_token = create_access_token(identity=current_user.id)
             refresh_token = create_refresh_token(identity=current_user.id)
             resp = jsonify(
-                {'message': 'Logged in as {}'.format(current_user.username)})
+                {'message': 'Logged in as {}'.format(current_user.name)})
 
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
@@ -106,19 +110,19 @@ class AllUsers(Resource):
 class UserDetails(Resource):
     @jwt_required
     def get(self):
-        user_id = get_jwt_identity()
-        current_user = UserModel.query.get(user_id)
+        id = get_jwt_identity()
+        current_user = UserModel.query.get(id)
         return user_schema.dump(current_user)
 
     @jwt_required
     def put(self):
-        user_id = get_jwt_identity()
-        current_user = UserModel.query.get(user_id)
+        id = get_jwt_identity()
+        current_user = UserModel.query.get(id)
         args = user_put_parser.parse_args()
-        if args['username']:
-            if UserModel.find_by_username(args['username']):
-                return {'message': 'User {} already exists'. format(args['username'])}, 409
-            current_user.username = args['username']
+        if args['name']:
+            if UserModel.find_by_username(args['name']):
+                return {'message': 'User {} already exists'. format(args['name'])}, 409
+            current_user.name = args['name']
 
         if args['password']:
             current_user.password = UserModel.generate_hash(args['password'])
