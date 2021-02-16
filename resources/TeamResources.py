@@ -4,6 +4,8 @@ from marshmallow_sqlalchemy import ModelSchema
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, set_access_cookies, set_refresh_cookies, unset_jwt_cookies)
 from flask import jsonify
+from run import mail
+from flask_mail import Message
 
 
 class UsersSchema(ModelSchema):
@@ -116,7 +118,7 @@ class TeamDetails(Resource):
             return {'message': 'Something went wrong'}, 500
 
 
-class AdminTeamDetailsSort(Resource):
+class TeamDetailsSort(Resource):
     @jwt_required
     def post(self, team_id):
         team = TeamModel.query.get(team_id)
@@ -334,3 +336,23 @@ class AdminTeamDetailsSort(Resource):
 
         response['lists'] = lists
         return jsonify(response)
+
+
+class AdminAddMemberToTeam(Resource):
+    def post(self, team_id, user_id):
+        user = UserModel.query.get(user_id)
+        team = TeamModel.query.get(team_id)
+
+        team.members.append(user)
+        team.update_db()
+
+        try:
+            msg = Message("Alert From Taskify",
+                          sender="Taskify@gmail.com",
+                          recipients=[user.email])
+            msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating".format(
+                team.name)
+            mail.send(msg)
+            return "added user {} to team {}, Mail Sent".format(user.name, team.name)
+        except Exception as e:
+            return "added user {} to team {}, Mail Failed".format(user.name, team.name)
