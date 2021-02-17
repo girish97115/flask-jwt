@@ -172,30 +172,30 @@ class DocumentModel(db.Model):
     def update_db(self):
         db.session.commit()
 
-class InviteModel(db.Model):
-    __tablename__ = 'invite'
+# class InviteModel(db.Model):
+#     __tablename__ = 'invite'
 
-    id = db.Column(db.Integer, primary_key=True)
-    mail = db.Column(db.String(120), nullable=False)
-    team_id = db.Column(db.Integer, nullable=False)
-    created_at = db.Column(db.DateTime(timezone=True),
-                           server_default=func.now())
-    updated_at = db.Column(db.DateTime(timezone=True),
-                           server_default=func.now(), onupdate=func.now())
+#     id = db.Column(db.Integer, primary_key=True)
+#     mail = db.Column(db.String(120), nullable=False)
+#     team_id = db.Column(db.Integer, nullable=False)
+#     created_at = db.Column(db.DateTime(timezone=True),
+#                            server_default=func.now())
+#     updated_at = db.Column(db.DateTime(timezone=True),
+#                            server_default=func.now(), onupdate=func.now())
 
-    def __repr__(self):
-        return '<Invite model {}, {}>'.format(self.id, self.mail)
+#     def __repr__(self):
+#         return '<Invite model {}, {}>'.format(self.id, self.mail)
 
-    def __init__(self, mail, team_id):
-        self.mail = mail
-        self.team_id = team_id
+#     def __init__(self, mail, team_id):
+#         self.mail = mail
+#         self.team_id = team_id
 
-    def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
+#     def save_to_db(self):
+#         db.session.add(self)
+#         db.session.commit()
 
-    def update_db(self):
-        db.session.commit()
+#     def update_db(self):
+#         db.session.commit()
 
 
 class UsersSchema(ModelSchema):
