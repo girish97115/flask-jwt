@@ -63,7 +63,7 @@ class CreateTask(Resource):
         user = UserModel.query.get(current_user)
         new_task = TaskModel(
             data['title'], data['status'], data["priority"])
-        new_task['reporter_id'] = user.id
+        new_task.reporter_id = user.id
         if data['description']:
             new_task.description = data['description']
         if data['assigne_id']:
