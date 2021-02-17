@@ -81,7 +81,6 @@ class UserLogin(Resource):
 
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
-            resp.headers.add('Access-Control-Allow-Credentials', 'true')
             return resp
 
         else:
