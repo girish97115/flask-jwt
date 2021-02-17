@@ -25,10 +25,11 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
 
+
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate()
-CORS(app)
+CORS(app, supports_credentials=True)
 migrate.init_app(app, db)
 admin = Admin(app)
 mail = Mail(app)
