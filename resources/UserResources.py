@@ -23,7 +23,8 @@ user_parser.add_argument(
 user_parser.add_argument('email')
 user_parser.add_argument(
     'phone', help='This field cannot be blank', required=True)
-user_parser.add_argument('invite_id')
+user_parser.add_argument(
+    'invite_id', help='Please Provide invite id', required=True)
 
 user_login_parser = reqparse.RequestParser()
 user_login_parser.add_argument(
@@ -48,6 +49,7 @@ class UserRegistration(Resource):
         #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
         if data['invite_id']:
             invite = InviteModel.query.get(data['invite_id'])
+
             new_user = UserModel(
                 data['name'], data['password'], invite.mail, data['phone'])
             try:
@@ -77,7 +79,7 @@ class UserLogin(Resource):
             access_token = create_access_token(identity=current_user.id)
             refresh_token = create_refresh_token(identity=current_user.id)
             resp = jsonify(
-                {'message': 'Logged in as {}'.format(current_user.name)})
+                {'message': 'Logged in as {}'.format(current_user.name), 'id': current_user.id})
 
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)

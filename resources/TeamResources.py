@@ -463,6 +463,6 @@ class AdminAddMemberToTeam(Resource):
             msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating".format(
                 team.name)
             mail.send(msg)
-            return "added user {} to team {}, Mail Sent".format(user.name, team.name)
+            return {"message":"added user {} to team {}, Mail Sent".format(user.name, team.name)}
         except Exception as e:
             return "added user {} to team {}, Mail Failed".format(user.name, team.name)
