@@ -142,6 +142,10 @@ class TaskModel(db.Model):
     def update_db(self):
         db.session.commit()
 
+    def delete_from_db(self):
+        db.session.delete(self)
+        db.session.commit()
+
     @classmethod
     def find_by_title(cls, title):
         return cls.query.filter_by(title=title).first()
@@ -171,6 +175,7 @@ class DocumentModel(db.Model):
 
     def update_db(self):
         db.session.commit()
+
 
 class InviteModel(db.Model):
     __tablename__ = 'invite'

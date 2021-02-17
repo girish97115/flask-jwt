@@ -117,6 +117,12 @@ class TaskDetails(Resource):
         except:
             return {'message': 'Something went wrong'}, 500
 
+        @jwt_required
+        def delete(self, task_id):
+            task = TaskModel.query.get(task_id)
+            task.delete_from_db()
+            return {'message': 'Task Deleted'}, 200
+
 
 class AdminCreateTask(Resource):
 
@@ -185,3 +191,8 @@ class AdminTaskDetails(Resource):
             return {'message': 'User Details Updated'}, 200
         except:
             return {'message': 'Something went wrong'}, 500
+
+    def delete(self, task_id):
+        task = TaskModel.query.get(task_id)
+        task.delete_from_db()
+        return {'message': 'Task Deleted'}, 200
