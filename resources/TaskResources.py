@@ -60,9 +60,10 @@ class CreateTask(Resource):
         if TaskModel.find_by_title(data['title']):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
+        user = UserModel.query.get(current_user)
         new_task = TaskModel(
             data['title'], data['status'], data["priority"])
-        new_task['reporter_id'] = current_user.id
+        new_task['reporter_id'] = user.id
         if data['description']:
             new_task.description = data['description']
         if data['assigne_id']:
