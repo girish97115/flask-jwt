@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from models import UserModel
+from models import UserModel, InviteModel
 from marshmallow_sqlalchemy import ModelSchema
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, set_access_cookies, set_refresh_cookies, unset_jwt_cookies)
@@ -20,10 +20,10 @@ user_parser.add_argument(
     'name', help='This field cannot be blank', required=True)
 user_parser.add_argument(
     'password', help='This field cannot be blank', required=True)
-user_parser.add_argument(
-    'email', help='This field cannot be blank', required=True)
+user_parser.add_argument('email')
 user_parser.add_argument(
     'phone', help='This field cannot be blank', required=True)
+user_parser.add_argument('invite_id')
 
 user_login_parser = reqparse.RequestParser()
 user_login_parser.add_argument(
@@ -46,20 +46,36 @@ class UserRegistration(Resource):
             return {'message': 'User {} already exists'. format(data['name'])}, 409
         # new_user = UserModel(
         #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
-        new_user = UserModel(
-            data['name'], data['password'], data["email"], data['phone'])
-        try:
-            new_user.save_to_db()
-            resp = jsonify(
-                {'message': 'User {} was created'.format(data['name'])})
-            resp.status_code = 200
-            return resp
-        except:
-            return {'message': 'Something went wrong'}, 500
+        if data['invite_id']:
+            invite = InviteModel.query.get(data['invite_id'])
+            new_user = UserModel(
+                data['name'], data['password'], invite.email, data['phone'])
+            try:
+                new_user.team_id = invite.team_id
+                new_user.save_to_db()
+                resp = jsonify(
+                    {'message': 'User {} was created'.format(data['name'])})
+                resp.status_code = 200
+                return resp
+            except:
+                return {'message': 'Something went wrong'}, 500
+
+        else:
+            new_user = UserModel(
+                data['name'], data['password'], data["email"], data['phone'])
+            try:
+                new_user.save_to_db()
+                resp = jsonify(
+                    {'message': 'User {} was created'.format(data['name'])})
+                resp.status_code = 200
+                return resp
+            except:
+                return {'message': 'Something went wrong'}, 500
 
 
 class UserLogin(Resource):
     def post(self):
+
         data = user_login_parser.parse_args()
         current_user = UserModel.find_by_username(data['name'])
         if not current_user:
@@ -74,6 +90,7 @@ class UserLogin(Resource):
 
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
+            resp.headers.add('Access-Control-Allow-Credentials', 'true')
             return resp
 
         else:

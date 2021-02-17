@@ -41,13 +41,14 @@ def create_tables():
 
 import views
 import models
-from resources import UserResources, TeamResources, TaskResources
+from resources import UserResources, TeamResources, TaskResources, InviteResources
 
 
 admin.add_view(ModelView(models.UserModel, db.session))
 admin.add_view(ModelView(models.TeamModel, db.session))
 admin.add_view(ModelView(models.TaskModel, db.session))
 admin.add_view(ModelView(models.DocumentModel, db.session))
+admin.add_view(ModelView(models.InviteModel, db.session))
 
 api.add_resource(UserResources.UserRegistration, '/registration')
 api.add_resource(UserResources.UserLogin, '/login')
@@ -80,6 +81,7 @@ api.add_resource(TeamResources.AdminAddMemberToTeam,
 api.add_resource(TaskResources.AdminCreateTask,
                  '/admin/createtask/<int:team_id>')
 api.add_resource(TaskResources.AdminTaskDetails, '/admin/task/<int:task_id>')
+
 
 
 if __name__ == '__main__':
