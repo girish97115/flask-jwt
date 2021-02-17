@@ -20,9 +20,9 @@ class InviteSchema(ModelSchema):
 
 
 invite_schema = InviteSchema(
-    only=("email", "team_id"))
+    only=("mail", "team_id", "id"))
 invites_schema = InviteSchema(
-    only=("email", "team_id"), many=True)
+    only=("mail", "team_id", "id"), many=True)
 
 
 class AdminSendInvite(Resource):

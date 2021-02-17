@@ -30,7 +30,7 @@ app.config['MAIL_USE_SSL'] = True
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate()
-CORS(app)
+CORS(app, supports_credentials=True)
 migrate.init_app(app, db)
 admin = Admin(app)
 mail = Mail(app)
@@ -84,7 +84,7 @@ api.add_resource(TaskResources.AdminCreateTask,
                  '/admin/createtask/<int:team_id>')
 api.add_resource(TaskResources.AdminTaskDetails, '/admin/task/<int:task_id>')
 
-
+api.add_resource(InviteResources.AdminSendInvite, '/admin/invite')
 
 if __name__ == '__main__':
     app.run()

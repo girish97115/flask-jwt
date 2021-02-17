@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from models import UserModel, InviteModel
+from models import UserModel, InviteModel, TeamModel
 from marshmallow_sqlalchemy import ModelSchema
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, set_access_cookies, set_refresh_cookies, unset_jwt_cookies)
@@ -49,9 +49,10 @@ class UserRegistration(Resource):
         if data['invite_id']:
             invite = InviteModel.query.get(data['invite_id'])
             new_user = UserModel(
-                data['name'], data['password'], invite.email, data['phone'])
+                data['name'], data['password'], invite.mail, data['phone'])
             try:
-                new_user.team_id = invite.team_id
+                team = TeamModel.query.get(invite.team_id)
+                new_user.teams.append(team)
                 new_user.save_to_db()
                 resp = jsonify(
                     {'message': 'User {} was created'.format(data['name'])})
@@ -59,18 +60,8 @@ class UserRegistration(Resource):
                 return resp
             except:
                 return {'message': 'Something went wrong'}, 500
-
         else:
-            new_user = UserModel(
-                data['name'], data['password'], data["email"], data['phone'])
-            try:
-                new_user.save_to_db()
-                resp = jsonify(
-                    {'message': 'User {} was created'.format(data['name'])})
-                resp.status_code = 200
-                return resp
-            except:
-                return {'message': 'Something went wrong'}, 500
+            return {'message': 'invite id Not Found'}, 500
 
 
 class UserLogin(Resource):
