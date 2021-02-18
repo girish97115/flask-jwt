@@ -35,7 +35,7 @@ class AdminSendInvite(Resource):
             msg = Message("Alert From Taskify",
                           sender="Taskify@gmail.com",
                           recipients=[args['email']])
-            msg.body = "You have been invited to team {} , please sign in to taskify and start Collaborating".format(
+            msg.body = "You have been invited to team {} , please sign in to taskify and start Collaborating, https://taskify-initial.herokuapp.com/ {}".format(
                 team.name)
             mail.send(msg)
             return invite_schema.dump(invite)

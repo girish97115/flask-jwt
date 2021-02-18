@@ -82,7 +82,7 @@ class TeamDetails(Resource):
     def get(self, team_id):
         team = TeamModel.query.get(team_id)
         response = {'id': team_id, 'name': team.name,
-                    'description': team.description}
+                    'description': team.description, 'members': users_schema.dump(team.members)}
 
         task_list = []
         tasks = TaskModel.query.filter_by(team_id=team_id)
@@ -463,6 +463,6 @@ class AdminAddMemberToTeam(Resource):
             msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating".format(
                 team.name)
             mail.send(msg)
-            return {"message":"added user {} to team {}, Mail Sent".format(user.name, team.name)}
+            return {"message": "added user {} to team {}, Mail Sent".format(user.name, team.name)}
         except Exception as e:
             return "added user {} to team {}, Mail Failed".format(user.name, team.name)
