@@ -45,17 +45,17 @@ class UserRegistration(Resource):
         data = user_parser.parse_args()
         if UserModel.find_by_username(data['name']):
             return {'message': 'User {} already exists'. format(data['name'])}, 409
+        invite = InviteModel.query.get(data['invite_id'])
         # new_user = UserModel(
         #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
-        if data['invite_id']:
-            invite = InviteModel.query.get(data['invite_id'])
-
+        if invite:
             new_user = UserModel(
                 data['name'], data['password'], invite.mail, data['phone'])
             try:
                 team = TeamModel.query.get(invite.team_id)
                 new_user.teams.append(team)
                 new_user.save_to_db()
+                invite.delete_from_db()
                 resp = jsonify(
                     {'message': 'User {} was created'.format(data['name'])})
                 resp.status_code = 200

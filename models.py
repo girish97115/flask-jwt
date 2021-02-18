@@ -18,7 +18,7 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(120), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     role = db.Column(db.String(120), nullable=False, default='user')
     phone = db.Column(db.String(120), nullable=False)
     created_at = db.Column(db.DateTime(timezone=True),
@@ -200,6 +200,10 @@ class InviteModel(db.Model):
         db.session.commit()
 
     def update_db(self):
+        db.session.commit()
+
+    def delete_from_db(self):
+        db.session.delete(self)
         db.session.commit()
 
 
