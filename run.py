@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 import os
+import datetime
 from flask_cors import CORS
 from flask_mail import Mail, Message
 
@@ -20,6 +21,7 @@ app.config['SECRET_KEY'] = 'some-secret-string'
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=60)
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 app.config['JWT_COOKIE_SAMESITE'] = "None"
 app.config['JWT_COOKIE_SECURE'] = True
