@@ -36,6 +36,7 @@ class AdminSendInvite(Resource):
                 if team in user.teams:
                     return {'message': 'User Already in team {}'.format(team.name)}
                 user.teams.append(team)
+                user.save_to_db
                 msg = Message("Alert From Taskify",
                               sender="Taskify@gmail.com",
                               recipients=[args['email']])
