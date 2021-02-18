@@ -6,6 +6,7 @@ from flask_migrate import Migrate
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 import os
+import datetime
 from flask_cors import CORS
 from flask_mail import Mail, Message
 
@@ -20,7 +21,10 @@ app.config['SECRET_KEY'] = 'some-secret-string'
 app.config['JWT_TOKEN_LOCATION'] = ['cookies']
 app.config['JWT_ACCESS_COOKIE_PATH'] = '/'
 app.config['JWT_REFRESH_COOKIE_PATH'] = '/token/refresh'
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=60)
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+app.config['JWT_COOKIE_SAMESITE'] = "None"
+app.config['JWT_COOKIE_SECURE'] = True
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USE_SSL'] = True
@@ -28,7 +32,7 @@ app.config['MAIL_USE_SSL'] = True
 jwt = JWTManager(app)
 db = SQLAlchemy(app)
 migrate = Migrate()
-CORS(app)
+CORS(app, supports_credentials=True)
 migrate.init_app(app, db)
 admin = Admin(app)
 mail = Mail(app)
@@ -41,13 +45,14 @@ def create_tables():
 
 import views
 import models
-from resources import UserResources, TeamResources, TaskResources
+from resources import UserResources, TeamResources, TaskResources, InviteResources
 
 
 admin.add_view(ModelView(models.UserModel, db.session))
 admin.add_view(ModelView(models.TeamModel, db.session))
 admin.add_view(ModelView(models.TaskModel, db.session))
 admin.add_view(ModelView(models.DocumentModel, db.session))
+admin.add_view(ModelView(models.InviteModel, db.session))
 
 api.add_resource(UserResources.UserRegistration, '/registration')
 api.add_resource(UserResources.UserLogin, '/login')
@@ -81,6 +86,7 @@ api.add_resource(TaskResources.AdminCreateTask,
                  '/admin/createtask/<int:team_id>')
 api.add_resource(TaskResources.AdminTaskDetails, '/admin/task/<int:task_id>')
 
+api.add_resource(InviteResources.AdminSendInvite, '/admin/invite')
 
 if __name__ == '__main__':
     app.run()

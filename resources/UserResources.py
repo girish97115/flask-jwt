@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from models import UserModel
+from models import UserModel, InviteModel, TeamModel
 from marshmallow_sqlalchemy import ModelSchema
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, set_access_cookies, set_refresh_cookies, unset_jwt_cookies)
@@ -20,10 +20,11 @@ user_parser.add_argument(
     'name', help='This field cannot be blank', required=True)
 user_parser.add_argument(
     'password', help='This field cannot be blank', required=True)
-user_parser.add_argument(
-    'email', help='This field cannot be blank', required=True)
+user_parser.add_argument('email')
 user_parser.add_argument(
     'phone', help='This field cannot be blank', required=True)
+user_parser.add_argument(
+    'invite_id', help='Please Provide invite id', required=True)
 
 user_login_parser = reqparse.RequestParser()
 user_login_parser.add_argument(
@@ -46,20 +47,28 @@ class UserRegistration(Resource):
             return {'message': 'User {} already exists'. format(data['name'])}, 409
         # new_user = UserModel(
         #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
-        new_user = UserModel(
-            data['name'], data['password'], data["email"], data['phone'])
-        try:
-            new_user.save_to_db()
-            resp = jsonify(
-                {'message': 'User {} was created'.format(data['name'])})
-            resp.status_code = 200
-            return resp
-        except:
-            return {'message': 'Something went wrong'}, 500
+        if data['invite_id']:
+            invite = InviteModel.query.get(data['invite_id'])
+
+            new_user = UserModel(
+                data['name'], data['password'], invite.mail, data['phone'])
+            try:
+                team = TeamModel.query.get(invite.team_id)
+                new_user.teams.append(team)
+                new_user.save_to_db()
+                resp = jsonify(
+                    {'message': 'User {} was created'.format(data['name'])})
+                resp.status_code = 200
+                return resp
+            except:
+                return {'message': 'Something went wrong'}, 500
+        else:
+            return {'message': 'invite id Not Found'}, 500
 
 
 class UserLogin(Resource):
     def post(self):
+
         data = user_login_parser.parse_args()
         current_user = UserModel.find_by_username(data['name'])
         if not current_user:
@@ -70,7 +79,7 @@ class UserLogin(Resource):
             access_token = create_access_token(identity=current_user.id)
             refresh_token = create_refresh_token(identity=current_user.id)
             resp = jsonify(
-                {'message': 'Logged in as {}'.format(current_user.name)})
+                {'message': 'Logged in as {}'.format(current_user.name), 'id': current_user.id})
 
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)

@@ -60,9 +60,10 @@ class CreateTask(Resource):
         if TaskModel.find_by_title(data['title']):
             return {'message': 'Task {} already exists'. format(data['title'])}, 409
 
+        user = UserModel.query.get(current_user)
         new_task = TaskModel(
             data['title'], data['status'], data["priority"])
-        new_task['reporter_id'] = current_user.id
+        new_task.reporter_id = user.id
         if data['description']:
             new_task.description = data['description']
         if data['assigne_id']:
@@ -116,6 +117,12 @@ class TaskDetails(Resource):
             return {'message': 'Task Details Updated'}, 200
         except:
             return {'message': 'Something went wrong'}, 500
+
+        @jwt_required
+        def delete(self, task_id):
+            task = TaskModel.query.get(task_id)
+            task.delete_from_db()
+            return {'message': 'Task Deleted'}, 200
 
 
 class AdminCreateTask(Resource):
@@ -185,3 +192,8 @@ class AdminTaskDetails(Resource):
             return {'message': 'User Details Updated'}, 200
         except:
             return {'message': 'Something went wrong'}, 500
+
+    def delete(self, task_id):
+        task = TaskModel.query.get(task_id)
+        task.delete_from_db()
+        return {'message': 'Task Deleted'}, 200

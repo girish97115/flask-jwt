@@ -1,6 +1,8 @@
 from flask_restful import Resource, reqparse
 from models import TeamModel, UserModel, TaskModel
 from marshmallow_sqlalchemy import ModelSchema
+import marshmallow.fields as fields
+from marshmallow_sqlalchemy.fields import Nested
 from flask_jwt_extended import (create_access_token, create_refresh_token,
                                 jwt_required, jwt_refresh_token_required, get_jwt_identity, get_raw_jwt, set_access_cookies, set_refresh_cookies, unset_jwt_cookies)
 from flask import jsonify
@@ -16,6 +18,18 @@ class UsersSchema(ModelSchema):
 user_schema = UsersSchema(only=("id", "name", "password", "email", "phone"))
 users_schema = UsersSchema(
     only=("id", "name", "password", "email", "phone"), many=True)
+
+
+class TasksPutSchema(ModelSchema):
+    class Meta:
+        include_fk = True
+        model = TaskModel
+
+
+task_get_schema = TasksPutSchema(
+    only=("id", "title", "description", "status", "priority", "reporter_id", "assigne_id", "planneddate"))
+tasks_get_schema = TasksPutSchema(
+    only=("id", "title", "description", "status", "priority", "reporter_id", "assigne_id", "planneddate"), many=True)
 
 
 class TasksSchema(ModelSchema):
@@ -55,7 +69,7 @@ task_sort_param_parser.add_argument('id')
 
 
 class UserTeams(Resource):
-    @jwt_required
+    @ jwt_required
     def get(self):
         id = get_jwt_identity()
         current_user = UserModel.query.get(id)
@@ -64,11 +78,11 @@ class UserTeams(Resource):
 
 
 class TeamDetails(Resource):
-    @jwt_required
+    @ jwt_required
     def get(self, team_id):
         team = TeamModel.query.get(team_id)
         response = {'id': team_id, 'name': team.name,
-                    'description': team.description}
+                    'description': team.description, 'members': users_schema.dump(team.members)}
 
         task_list = []
         tasks = TaskModel.query.filter_by(team_id=team_id)
@@ -81,18 +95,30 @@ class TeamDetails(Resource):
         todo = {'name': 'Todo'}
         todotasks = tasks_schema.dump(
             TaskModel.query.filter_by(status='Todo', team_id=team_id))
+        for task in todotasks:
+            if task['assigne_id']:
+                task['assigne_id'] = user_schema.dump(
+                    UserModel.query.get(task['assigne_id']))
         todo['tasks'] = todotasks
         lists.append(todo)
 
         InProgess = {'name': 'InProgress'}
         InProgesstasks = tasks_schema.dump(
             TaskModel.query.filter_by(status='InProgress', team_id=team_id))
+        for task in InProgesstasks:
+            if task['assigne_id']:
+                task['assigne_id'] = user_schema.dump(
+                    UserModel.query.get(task['assigne_id']))
         InProgess['tasks'] = InProgesstasks
         lists.append(InProgess)
 
         Completed = {'name': 'Completed'}
         Completedtasks = tasks_schema.dump(
             TaskModel.query.filter_by(status='Completed', team_id=team_id))
+        for task in Completedtasks:
+            if task['assigne_id']:
+                task['assigne_id'] = user_schema.dump(
+                    UserModel.query.get(task['assigne_id']))
         Completed['tasks'] = Completedtasks
         lists.append(Completed)
 
@@ -139,18 +165,30 @@ class TeamDetailsSort(Resource):
             todo = {'name': 'Todo'}
             todotasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Todo', priority='Major', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Todo', priority='Normal', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Todo', priority='Minor', team_id=team_id))
+            for task in todotasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             todo['tasks'] = todotasks
             lists.append(todo)
 
             InProgess = {'name': 'InProgress'}
             InProgesstasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='InProgress', priority='Major', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='InProgress', priority='Normal', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='InProgress', priority='Minor', team_id=team_id))
+            for task in InProgesstasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
             Completed = {'name': 'Completed'}
             Completedtasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Completed', priority='Major', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Completed', priority='Normal', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Completed', priority='Minor', team_id=team_id))
+            for task in Completedtasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -158,19 +196,31 @@ class TeamDetailsSort(Resource):
 
             todo = {'name': 'Todo'}
             todotasks = tasks_schema.dump(
-                TaskModel.query.filter_by(status='Todo', team_id=team_id).order_by('planneddate')[::-1])
+                TaskModel.query.filter_by(status='Todo', team_id=team_id).order_by('planneddate'))
+            for task in todotasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             todo['tasks'] = todotasks
             lists.append(todo)
 
             InProgess = {'name': 'InProgress'}
             InProgesstasks = tasks_schema.dump(
-                TaskModel.query.filter_by(status='InProgress', team_id=team_id).order_by('planneddate')[::-1])
+                TaskModel.query.filter_by(status='InProgress', team_id=team_id).order_by('planneddate'))
+            for task in InProgesstasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
             Completed = {'name': 'Completed'}
             Completedtasks = tasks_schema.dump(
-                TaskModel.query.filter_by(status='Completed', team_id=team_id).order_by('planneddate')[::-1])
+                TaskModel.query.filter_by(status='Completed', team_id=team_id).order_by('planneddate'))
+            for task in Completedtasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -179,18 +229,30 @@ class TeamDetailsSort(Resource):
             todo = {'name': 'Todo'}
             todotasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Todo', team_id=team_id, assigne_id=assigne_id))
+            for task in todotasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             todo['tasks'] = todotasks
             lists.append(todo)
 
             InProgess = {'name': 'InProgress'}
             InProgesstasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='InProgress', team_id=team_id, assigne_id=assigne_id))
+            for task in InProgesstasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
             Completed = {'name': 'Completed'}
             Completedtasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Completed', team_id=team_id, assigne_id=assigne_id))
+            for task in Completedtasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -223,18 +285,30 @@ class AdminTeamDetails(Resource):
         todo = {'name': 'Todo'}
         todotasks = tasks_schema.dump(
             TaskModel.query.filter_by(status='Todo', team_id=team_id))
+        for task in todotasks:
+            if task['assigne_id']:
+                task['assigne_id'] = user_schema.dump(
+                    UserModel.query.get(task['assigne_id']))
         todo['tasks'] = todotasks
         lists.append(todo)
 
         InProgess = {'name': 'InProgress'}
         InProgesstasks = tasks_schema.dump(
             TaskModel.query.filter_by(status='InProgress', team_id=team_id))
+        for task in InProgesstasks:
+            if task['assigne_id']:
+                task['assigne_id'] = user_schema.dump(
+                    UserModel.query.get(task['assigne_id']))
         InProgess['tasks'] = InProgesstasks
         lists.append(InProgess)
 
         Completed = {'name': 'Completed'}
         Completedtasks = tasks_schema.dump(
             TaskModel.query.filter_by(status='Completed', team_id=team_id))
+        for task in Completedtasks:
+            if task['assigne_id']:
+                task['assigne_id'] = user_schema.dump(
+                    UserModel.query.get(task['assigne_id']))
         Completed['tasks'] = Completedtasks
         lists.append(Completed)
 
@@ -279,18 +353,30 @@ class AdminTeamDetailsSort(Resource):
             todo = {'name': 'Todo'}
             todotasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Todo', priority='Major', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Todo', priority='Normal', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Todo', priority='Minor', team_id=team_id))
+            for task in todotasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             todo['tasks'] = todotasks
             lists.append(todo)
 
             InProgess = {'name': 'InProgress'}
             InProgesstasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='InProgress', priority='Major', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='InProgress', priority='Normal', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='InProgress', priority='Minor', team_id=team_id))
+            for task in InProgesstasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
             Completed = {'name': 'Completed'}
             Completedtasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Completed', priority='Major', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Completed', priority='Normal', team_id=team_id)) + tasks_schema.dump(TaskModel.query.filter_by(status='Completed', priority='Minor', team_id=team_id))
+            for task in Completedtasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -298,19 +384,31 @@ class AdminTeamDetailsSort(Resource):
 
             todo = {'name': 'Todo'}
             todotasks = tasks_schema.dump(
-                TaskModel.query.filter_by(status='Todo', team_id=team_id).order_by('planneddate')[::-1])
+                TaskModel.query.filter_by(status='Todo', team_id=team_id).order_by('planneddate'))
+            for task in todotasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             todo['tasks'] = todotasks
             lists.append(todo)
 
             InProgess = {'name': 'InProgress'}
             InProgesstasks = tasks_schema.dump(
-                TaskModel.query.filter_by(status='InProgress', team_id=team_id).order_by('planneddate')[::-1])
+                TaskModel.query.filter_by(status='InProgress', team_id=team_id).order_by('planneddate'))
+            for task in InProgesstasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
             Completed = {'name': 'Completed'}
             Completedtasks = tasks_schema.dump(
-                TaskModel.query.filter_by(status='Completed', team_id=team_id).order_by('planneddate')[::-1])
+                TaskModel.query.filter_by(status='Completed', team_id=team_id).order_by('planneddate'))
+            for task in Completedtasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -319,18 +417,30 @@ class AdminTeamDetailsSort(Resource):
             todo = {'name': 'Todo'}
             todotasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Todo', team_id=team_id, assigne_id=assigne_id))
+            for task in todotasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             todo['tasks'] = todotasks
             lists.append(todo)
 
             InProgess = {'name': 'InProgress'}
             InProgesstasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='InProgress', team_id=team_id, assigne_id=assigne_id))
+            for task in InProgesstasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
             Completed = {'name': 'Completed'}
             Completedtasks = tasks_schema.dump(
                 TaskModel.query.filter_by(status='Completed', team_id=team_id, assigne_id=assigne_id))
+            for task in Completedtasks:
+                if task['assigne_id']:
+                    task['assigne_id'] = user_schema.dump(
+                        UserModel.query.get(task['assigne_id']))
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -353,6 +463,6 @@ class AdminAddMemberToTeam(Resource):
             msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating".format(
                 team.name)
             mail.send(msg)
-            return "added user {} to team {}, Mail Sent".format(user.name, team.name)
+            return {"message": "added user {} to team {}, Mail Sent".format(user.name, team.name)}
         except Exception as e:
             return "added user {} to team {}, Mail Failed".format(user.name, team.name)
