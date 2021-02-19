@@ -40,7 +40,7 @@ class AdminSendInvite(Resource):
                 msg = Message("Alert From Taskify",
                               sender="Taskify@gmail.com",
                               recipients=[args['email']])
-                msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating, https://taskify-initial.herokuapp.com/login".format(
+                msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating, https://taskifywebapp.herokuapp.com/login".format(
                     team.name)
                 mail.send(msg)
                 return {'message': 'User Added to the team'}
@@ -55,7 +55,7 @@ class AdminSendInvite(Resource):
                 msg = Message("Alert From Taskify",
                               sender="Taskify@gmail.com",
                               recipients=[args['email']])
-                msg.body = "You have been invited to team {} , please sign up to taskify and start Collaborating, https://taskify-initial.herokuapp.com/register/{}".format(
+                msg.body = "You have been invited to team {} , please sign up to taskify and start Collaborating,https://taskifywebapp.herokuapp.com/register/{}".format(
                     team.name, invite.id)
                 mail.send(msg)
                 return invite_schema.dump(invite)
