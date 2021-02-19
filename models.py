@@ -2,7 +2,8 @@ from run import db, admin
 from marshmallow_sqlalchemy import ModelSchema
 from passlib.hash import pbkdf2_sha256 as sha256
 from sqlalchemy.sql import func
-
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 userteam = db.Table('userteam',
                     db.Column('user_id', db.Integer, db.ForeignKey(
@@ -180,7 +181,8 @@ class DocumentModel(db.Model):
 class InviteModel(db.Model):
     __tablename__ = 'invite'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True,
+                   default=uuid.uuid4, unique=True)
     mail = db.Column(db.String(120), nullable=False)
     team_id = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True),

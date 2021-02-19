@@ -70,6 +70,8 @@ api.add_resource(TeamResources.TeamDetailsSort,
 api.add_resource(TaskResources.CreateTask, '/createtask/<int:team_id>')
 api.add_resource(TaskResources.TaskDetails, '/task/<int:task_id>')
 
+api.add_resource(InviteResources.CheckInvite, '/invite/<invite_id>')
+
 
 # for admin use
 api.add_resource(UserResources.AllUsers, '/users')

@@ -61,3 +61,12 @@ class AdminSendInvite(Resource):
                 return invite_schema.dump(invite)
             except Exception as e:
                 return {'message2': str(e)}, 500
+
+
+class CheckInvite(Resource):
+    def get(self, invite_id):
+        invite = InviteModel.query.get(invite_id)
+        if invite:
+            return {"invite": True}
+        else:
+            return {"invite": False}
