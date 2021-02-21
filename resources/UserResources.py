@@ -57,7 +57,7 @@ class UserRegistration(Resource):
                 new_user.save_to_db()
                 invite.delete_from_db()
                 resp = jsonify(
-                    {'message': 'User {} was created'.format(data['name'])})
+                    {'message': 'User {} was created'.format(data['name']), 'id': new_user.id})
                 resp.status_code = 200
                 return resp
             except:
