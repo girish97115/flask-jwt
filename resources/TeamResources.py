@@ -99,6 +99,8 @@ class TeamDetails(Resource):
             if task['assigne_id']:
                 task['assigne_id'] = user_schema.dump(
                     UserModel.query.get(task['assigne_id']))
+            task['reporter_name'] = UserModel.query.get(
+                task['reporter_id']).name
         todo['tasks'] = todotasks
         lists.append(todo)
 
@@ -109,6 +111,8 @@ class TeamDetails(Resource):
             if task['assigne_id']:
                 task['assigne_id'] = user_schema.dump(
                     UserModel.query.get(task['assigne_id']))
+            task['reporter_name'] = UserModel.query.get(
+                task['reporter_id']).name
         InProgess['tasks'] = InProgesstasks
         lists.append(InProgess)
 
@@ -119,6 +123,8 @@ class TeamDetails(Resource):
             if task['assigne_id']:
                 task['assigne_id'] = user_schema.dump(
                     UserModel.query.get(task['assigne_id']))
+            task['reporter_name'] = UserModel.query.get(
+                task['reporter_id']).name
         Completed['tasks'] = Completedtasks
         lists.append(Completed)
 
@@ -169,6 +175,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             todo['tasks'] = todotasks
             lists.append(todo)
 
@@ -179,6 +187,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
@@ -189,6 +199,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -201,6 +213,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             todo['tasks'] = todotasks
             lists.append(todo)
 
@@ -211,6 +225,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
@@ -221,6 +237,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
@@ -233,6 +251,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             todo['tasks'] = todotasks
             lists.append(todo)
 
@@ -243,6 +263,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             InProgess['tasks'] = InProgesstasks
             lists.append(InProgess)
 
@@ -253,6 +275,8 @@ class TeamDetailsSort(Resource):
                 if task['assigne_id']:
                     task['assigne_id'] = user_schema.dump(
                         UserModel.query.get(task['assigne_id']))
+                task['reporter_name'] = UserModel.query.get(
+                    task['reporter_id']).name
             Completed['tasks'] = Completedtasks
             lists.append(Completed)
 
