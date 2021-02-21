@@ -40,8 +40,10 @@ class AdminSendInvite(Resource):
                 msg = Message("Alert From Taskify",
                               sender="Taskify@gmail.com",
                               recipients=[args['email']])
-                msg.body = "You have been added to team {} , please sign in to taskify and start Collaborating, https://taskifywebapp.herokuapp.com/login".format(
+
+                msg.body = """ <h3> You have been added to team {} ,</h3><h4>please login in to taskify and start Collaborating. </h4> https://taskifywebapp.herokuapp.com/login """.format(
                     team.name)
+                msg.html = '<img src="https://pbs.twimg.com/profile_images/1088311120295645184/6sGzOYtb_400x400.jpg" alt="Girl in a jacket" width="200" height="200"><br><p>' + msg.body + '</p>'
                 mail.send(msg)
                 return {'message': 'User Added to the team'}
             except Exception as e:
@@ -55,8 +57,9 @@ class AdminSendInvite(Resource):
                 msg = Message("Alert From Taskify",
                               sender="Taskify@gmail.com",
                               recipients=[args['email']])
-                msg.body = "You have been invited to team {} , please sign up to taskify and start Collaborating,https://taskifywebapp.herokuapp.com/register/{}".format(
+                msg.body = """<h3> You have been invited to team {} ,</h3><h4> please sign up to taskify and start Collaborating. <h4>https://taskifywebapp.herokuapp.com/register/{}""".format(
                     team.name, invite.id)
+                msg.html = '<img src="https://pbs.twimg.com/profile_images/1088311120295645184/6sGzOYtb_400x400.jpg" alt="Girl in a jacket" width="200" height="200"><br><p>' + msg.body + '</p>'
                 mail.send(msg)
                 return invite_schema.dump(invite)
             except Exception as e:
