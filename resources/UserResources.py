@@ -79,7 +79,7 @@ class UserLogin(Resource):
             access_token = create_access_token(identity=current_user.id)
             refresh_token = create_refresh_token(identity=current_user.id)
             resp = jsonify(
-                {'message': 'Logged in as {}'.format(current_user.name), 'id': current_user.id})
+                {'message': 'Logged in as {}'.format(current_user.name), 'id': current_user.id, 'name': current_user.name})
 
             set_access_cookies(resp, access_token)
             set_refresh_cookies(resp, refresh_token)
