@@ -122,7 +122,7 @@ class TaskDetails(Resource):
         def delete(self, task_id):
             task = TaskModel.query.get(task_id)
             task.delete_from_db()
-            return {'message': 'Task Deleted'}, 200
+            return {'message': 'Task Deleted', 'id': task_id}, 200
 
 
 class AdminCreateTask(Resource):
@@ -196,4 +196,4 @@ class AdminTaskDetails(Resource):
     def delete(self, task_id):
         task = TaskModel.query.get(task_id)
         task.delete_from_db()
-        return {'message': 'Task Deleted'}, 200
+        return {'message': 'Task Deleted', 'id': task_id}, 200
