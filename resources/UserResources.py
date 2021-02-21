@@ -11,9 +11,9 @@ class UsersSchema(ModelSchema):
         model = UserModel
 
 
-user_schema = UsersSchema(only=("id", "name", "password", "email", "phone"))
+user_schema = UsersSchema(only=("id", "name", "email", "phone"))
 users_schema = UsersSchema(
-    only=("id", "name", "password", "email", "phone"), many=True)
+    only=("id", "name", "email", "phone"), many=True)
 
 user_parser = reqparse.RequestParser()
 user_parser.add_argument(
@@ -50,7 +50,7 @@ class UserRegistration(Resource):
         #     data['username'], UserModel.generate_hash(data['password']), data["email"], data['phone'])
         if invite:
             new_user = UserModel(
-                data['name'], data['password'], invite.mail, data['phone'])
+                data['name'], UserModel.generate_hash(data['password']), invite.mail, data['phone'])
             try:
                 team = TeamModel.query.get(invite.team_id)
                 new_user.teams.append(team)
@@ -75,7 +75,7 @@ class UserLogin(Resource):
             return {'message': 'User {} doesn\'t exist'.format(data['name'])}, 404
 
         # if UserModel.verify_hash(data['password'], current_user.password):
-        if data['password'] == current_user.password:
+        if UserModel.verify_hash(data['password'], current_user.password):
             access_token = create_access_token(identity=current_user.id)
             refresh_token = create_refresh_token(identity=current_user.id)
             resp = jsonify(
